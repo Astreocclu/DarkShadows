@@ -1,9 +1,9 @@
 import random
 from grid import grid_width, grid_height, random_starting_positions
-from units import Archer, Mage, Warrior
+from units import Archer, Mage, Warrior, Engineer, Priest
 
-def autoplay_turn(army, enemy_army):
-    for unit in army:
+def autoplay_turn(player_army, enemy_army, player_turrets, enemy_turrets):
+    for unit in player_army:
         if unit.is_dead():
             continue
 
@@ -13,6 +13,12 @@ def autoplay_turn(army, enemy_army):
             if unit.in_attack_range(enemy):
                 target = enemy
                 break
+
+        if isinstance(unit, Engineer):
+            turret = unit.deploy_turret(enemy_army)
+            if turret:
+                # If a turret was dropped, add it to the army
+                army.append(turret)
 
         if target:
             # Attack the enemy
@@ -31,6 +37,7 @@ def autoplay_turn(army, enemy_army):
                 print("All enemies have been defeated!")
                 return
 
+
 def all_units_dead(army):
     return all(unit.is_dead() for unit in army)
 
@@ -45,11 +52,23 @@ def play_again():
         else:
             print("Invalid input. Please enter 'y' or 'n'.")
 
-def generate_army(num_units, starting_positions):
-    unit_classes = [Archer, Mage, Warrior]
-    army = []
-    for position in starting_positions:
+def generate_player_army(num_units, starting_positions):
+    unit_classes = [Archer, Mage, Warrior, Engineer, Priest]
+    player_army = []
+    for _ in range(num_units):
         unit_class = random.choice(unit_classes)
-        x, y = position
-        army.append(unit_class(x, y))
-    return army
+        x, y = random.choice(starting_positions)
+        starting_positions.remove((x, y))
+        player_army.append(unit_class(x, y, 'player'))  # Pass 'player' as the team
+    return player_army
+
+def generate_enemy_army(num_units, starting_positions):
+    unit_classes = [Archer, Mage, Warrior, Engineer, Priest]  # Maybe the enemy army does not have Engineer and Priest?
+    enemy_army = []
+    for _ in range(num_units):
+        unit_class = random.choice(unit_classes)
+        x, y = random.choice(starting_positions)
+        starting_positions.remove((x, y))
+        enemy_army.append(unit_class(x, y, 'enemy'))  # Pass 'enemy' as the team
+    return enemy_army
+

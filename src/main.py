@@ -1,9 +1,9 @@
 import pygame
 import random
+from units import Engineer, player_turrets, enemy_turrets
 from grid import draw_grid, grid_width, grid_height, random_starting_positions
 from constants import tile_size
-from units import Archer, Mage, Warrior
-from gameplay import autoplay_turn, generate_army, all_units_dead, play_again
+from gameplay import autoplay_turn, generate_player_army, generate_enemy_army , all_units_dead, play_again
 # import the gameplay module from the gameplay.py file
 
 
@@ -25,10 +25,11 @@ clock = pygame.time.Clock()
 
 player_starting_positions, enemy_starting_positions = random_starting_positions(4, grid_width, grid_height)
 
-player_army = generate_army(4, player_starting_positions)
-enemy_army = generate_army(4, enemy_starting_positions)
+player_army = generate_player_army(4, player_starting_positions)
+enemy_army = generate_enemy_army(4, enemy_starting_positions)
 
 
+# Inside your game loop:
 # Inside your game loop:
 while running:
     for event in pygame.event.get():
@@ -40,6 +41,10 @@ while running:
     # Draw the grid
     draw_grid(screen, grid_width, grid_height, tile_size)
 
+    # Draw the turrets
+    for turret in player_turrets + enemy_turrets:
+      turret.draw(screen, (255, 255, 255))  # White color
+
     # Draw the units
     for unit in player_army:
         unit.draw(screen, player_color)
@@ -47,8 +52,8 @@ while running:
         unit.draw(screen, enemy_color)
 
     # Play one turn for each army
-    autoplay_turn(player_army, enemy_army)
-    autoplay_turn(enemy_army, player_army)
+    autoplay_turn(player_army, enemy_army, player_turrets, enemy_turrets)
+    autoplay_turn(enemy_army, player_army, enemy_turrets, player_turrets)
 
     # Check if all units in either army are dead
     if all_units_dead(player_army):
@@ -56,20 +61,19 @@ while running:
         running = play_again()
         if running:
             player_starting_positions, enemy_starting_positions = random_starting_positions(4, grid_width, grid_height)
-            player_army = generate_army(4, player_starting_positions)
-            enemy_army = generate_army(4, enemy_starting_positions)
+            player_army = generate_player_army(4, player_starting_positions)
+            enemy_army = generate_enemy_army(4, enemy_starting_positions)
     elif all_units_dead(enemy_army):
         print("All enemy units are dead! You win!")
         running = play_again()
         if running:
             player_starting_positions, enemy_starting_positions = random_starting_positions(4, grid_width, grid_height)
-            player_army = generate_army(4, player_starting_positions)
-            enemy_army = generate_army(4, enemy_starting_positions)
+            player_army = generate_player_army(4, player_starting_positions)
+            enemy_army = generate_enemy_army(4, enemy_starting_positions)
 
     pygame.display.update()
 
     # Wait for a bit between frames
     clock.tick(1)  # Wait for one second between frames
-
 
 pygame.quit()
